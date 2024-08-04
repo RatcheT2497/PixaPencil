@@ -34,7 +34,9 @@ import com.therealbluepandabear.pixapencil.utility.constants.IntConstants
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.roundToInt
+data class GridData(val offsetX: Int, val offsetY: Int, val width: Int, val height: Int, var paintData: Paint) {
 
+}
 class DrawingView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
@@ -60,6 +62,27 @@ class DrawingView @JvmOverloads constructor(
     var prevY: Int? = null
 
     val shadingMap = mutableListOf<Coordinate>()
+    val gridList = mutableListOf<GridData>()
+    init {
+        gridList.add(GridData(0, 0, 1, 1, Paint().apply {
+            strokeWidth = 1f
+            pathEffect = null
+            color = Color.LTGRAY
+            style = Paint.Style.STROKE
+            isDither = true
+            isAntiAlias = true
+            isFilterBitmap = false
+        }))
+        gridList.add(GridData(4, 4, 16, 16, Paint().apply {
+            strokeWidth = 1f
+            pathEffect = null
+            color = Color.CYAN
+            style = Paint.Style.STROKE
+            isDither = true
+            isAntiAlias = true
+            isFilterBitmap = false
+        }))
+    }
 
     private var onPixelTapped: (Coordinate) -> Unit = { }
     private var onTouchEvent: () -> Unit = { }
@@ -133,8 +156,8 @@ class DrawingView @JvmOverloads constructor(
 
 
     private fun drawGrid(canvas: Canvas) {
+/*
         var xm = (boundingRect.top)
-
         for (i in 0 .. bitmapHeight) {
             canvas.drawLine(
                 (boundingRect.left),
@@ -148,7 +171,6 @@ class DrawingView @JvmOverloads constructor(
         }
 
         var ym = (boundingRect.left)
-
         for (i in 0 .. bitmapWidth) {
             canvas.drawLine(
                 ym,
@@ -157,8 +179,25 @@ class DrawingView @JvmOverloads constructor(
                 (boundingRect.bottom),
                 PaintData.gridPaint
             )
-
             ym += scaleWidth
+        }
+*/
+        for (grid in gridList)
+        {
+            val bRectHeight = grid.height + grid.offsetY * 2;
+            val bRectWidth = grid.width + grid.offsetX * 2;
+
+            for (y in 0 until (bitmapHeight / bRectHeight))
+            {
+                for (x in 0 until (bitmapWidth / bRectWidth))
+                {
+                    val left: Float = boundingRect.left + (x * bRectWidth + grid.offsetX) * scaleWidth as Float;
+                    val top: Float = boundingRect.top + (y * bRectHeight + grid.offsetY) * scaleHeight as Float;
+                    val right: Float = left + grid.width * scaleWidth;
+                    val bottom: Float = top + grid.height * scaleHeight;
+                    canvas.drawRect(left, top, right, bottom, grid.paintData);
+                }
+            }
         }
     }
 
